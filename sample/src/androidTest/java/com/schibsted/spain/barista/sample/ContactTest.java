@@ -9,6 +9,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.schibsted.spain.barista.assertion.BaristaVisibilityAssertions.assertDisplayed;
+import static com.schibsted.spain.barista.intents.BaristaIntents.BARISTA_TEST_CONTACT_NAME;
+import static com.schibsted.spain.barista.intents.BaristaIntents.BARISTA_TEST_CONTACT_PHONE;
 import static com.schibsted.spain.barista.intents.BaristaIntents.mockContactIntent;
 import static com.schibsted.spain.barista.interaction.BaristaClickInteractions.clickOn;
 
@@ -23,11 +25,12 @@ public class ContactTest {
 
   @Test
   public void pickContactAndShowInfo() {
-    mockContactIntent("Barista Test User");
+    mockContactIntent();
 
     clickOn(R.id.pick_contact);
 
-    assertDisplayed("Barista Test User");
+    assertDisplayed(BARISTA_TEST_CONTACT_NAME);
+    assertDisplayed(BARISTA_TEST_CONTACT_PHONE);
   }
 
 }

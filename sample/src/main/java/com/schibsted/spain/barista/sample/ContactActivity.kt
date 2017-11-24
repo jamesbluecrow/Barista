@@ -6,6 +6,7 @@ import android.provider.ContactsContract
 import android.support.v7.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_contact.*
 
+
 class ContactActivity : AppCompatActivity() {
 
     companion object {
@@ -29,9 +30,11 @@ class ContactActivity : AppCompatActivity() {
                     val uri = data.data
                     val cursor = contentResolver.query(uri, null, null, null, null)
                     if (cursor.moveToFirst()) {
-                        val nameIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
-
+                        val nameIndex = cursor.getColumnIndex(ContactsContract.Data.DISPLAY_NAME)
                         contact_name.text = cursor.getString(nameIndex)
+
+                        val idIndex = cursor.getColumnIndex(ContactsContract.Data._ID)
+                        contact_phone.text = getPhoneNumber(cursor.getString(idIndex))
                     }
                     cursor.close()
                 } catch (e: Exception) {
@@ -39,5 +42,18 @@ class ContactActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun getPhoneNumber(id: String): String? {
+        val people = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                null, ContactsContract.Data.RAW_CONTACT_ID + "= " + id, null, null)
+
+        if (people.moveToFirst()) {
+            val number = people.getString(people.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
+            people.close()
+            return number
+        }
+
+        return null
     }
 }
