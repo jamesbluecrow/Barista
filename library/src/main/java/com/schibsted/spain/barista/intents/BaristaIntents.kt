@@ -17,12 +17,6 @@ import com.schibsted.spain.barista.intents.BaristaContactIntentMatchers.captureC
 object BaristaIntents {
     private val DEFAULT_SIZE = 100
 
-    @JvmField
-    val BARISTA_TEST_CONTACT_NAME = "Barista Test Contact"
-
-    @JvmField
-    val BARISTA_TEST_CONTACT_PHONE = "612677130"
-
     @JvmStatic
     @JvmOverloads
     fun mockAndroidCamera(width: Int = DEFAULT_SIZE, height: Int = DEFAULT_SIZE) {
@@ -39,10 +33,21 @@ object BaristaIntents {
         return Instrumentation.ActivityResult(Activity.RESULT_OK, resultData)
     }
 
+    @JvmField
+    val BARISTA_TEST_CONTACT_NAME = "Barista Test Contact"
+
+    @JvmField
+    val BARISTA_TEST_CONTACT_PHONE = "612677130"
+
+    @JvmField
+    val BARISTA_TEST_CONTACT_EMAIL = "barista@github.com"
+
     @JvmStatic
     @JvmOverloads
-    fun mockContactIntent(name: String = BARISTA_TEST_CONTACT_NAME, phone: String = BARISTA_TEST_CONTACT_PHONE) {
-        val result = createContactPickStub(createContact(name, phone))
+    fun mockContactIntent(name: String = BARISTA_TEST_CONTACT_NAME,
+                          phone: String = BARISTA_TEST_CONTACT_PHONE,
+                          address: String = BARISTA_TEST_CONTACT_EMAIL) {
+        val result = createContactPickStub(createContact(name, phone, address))
         intending(captureContact()).respondWith(result)
     }
 
@@ -53,7 +58,7 @@ object BaristaIntents {
         return Instrumentation.ActivityResult(Activity.RESULT_OK, resultData)
     }
 
-    private fun createContact(name: String, number: String): Uri {
+    private fun createContact(name: String, number: String, address: String): Uri {
         val contactOperationsList = ArrayList<ContentProviderOperation>()
 
         contactOperationsList.add(ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
@@ -68,10 +73,19 @@ object BaristaIntents {
                 .withValue(StructuredName.DISPLAY_NAME, name)
                 .build())
 
-        var arrayOfContentProviderResults = getInstrumentation().targetContext.contentResolver.applyBatch(ContactsContract.AUTHORITY, contactOperationsList)
+        val arrayOfContentProviderResults = getInstrumentation().targetContext.contentResolver.applyBatch(ContactsContract.AUTHORITY, contactOperationsList)
         val uri = arrayOfContentProviderResults[0].uri
 
         // PHONES
+        addPhone(uri.lastPathSegment, number)
+
+        // EMAILS
+        addEmail(uri.lastPathSegment, address)
+
+        return uri
+    }
+
+    private fun addPhone(rawContactId: String, number: String) {
         val phoneTypes = arrayListOf<Int>()
 
         phoneTypes.add(ContactsContract.CommonDataKinds.Phone.TYPE_HOME)
@@ -98,15 +112,33 @@ object BaristaIntents {
         val phonesOperationsList = ArrayList<ContentProviderOperation>()
         phoneTypes.map {
             phonesOperationsList.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                    .withValue(ContactsContract.Data.RAW_CONTACT_ID, uri.lastPathSegment)
+                    .withValue(ContactsContract.Data.RAW_CONTACT_ID, rawContactId)
                     .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
                     .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, number)
                     .withValue(ContactsContract.CommonDataKinds.Phone.TYPE, it)
                     .build())
         }
         getInstrumentation().targetContext.contentResolver.applyBatch(ContactsContract.AUTHORITY, phonesOperationsList)
+    }
 
-        return uri
+    private fun addEmail(rawContactId: String, address: String) {
+        val emailTypes = arrayListOf<Int>()
+
+        emailTypes.add(ContactsContract.CommonDataKinds.Email.TYPE_HOME)
+        emailTypes.add(ContactsContract.CommonDataKinds.Phone.TYPE_WORK)
+        emailTypes.add(ContactsContract.CommonDataKinds.Phone.TYPE_OTHER)
+        emailTypes.add(ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE)
+
+        val emailsOperationsList = ArrayList<ContentProviderOperation>()
+        emailTypes.map {
+            emailsOperationsList.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                    .withValue(ContactsContract.Data.RAW_CONTACT_ID, rawContactId)
+                    .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE)
+                    .withValue(ContactsContract.CommonDataKinds.Email.DATA, address)
+                    .withValue(ContactsContract.CommonDataKinds.Email.TYPE, it)
+                    .build())
+        }
+        getInstrumentation().targetContext.contentResolver.applyBatch(ContactsContract.AUTHORITY, emailsOperationsList)
     }
 
 }

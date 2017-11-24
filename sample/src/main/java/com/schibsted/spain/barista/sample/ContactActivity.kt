@@ -34,7 +34,9 @@ class ContactActivity : AppCompatActivity() {
                         contact_name.text = cursor.getString(nameIndex)
 
                         val idIndex = cursor.getColumnIndex(ContactsContract.Data._ID)
-                        contact_phone.text = getPhoneNumber(cursor.getString(idIndex))
+                        val rawId = cursor.getString(idIndex)
+                        contact_phone.text = getPhoneNumber(rawId)
+                        contact_email.text = getEmail(cursor.getString(idIndex))
                     }
                     cursor.close()
                 } catch (e: Exception) {
@@ -45,13 +47,26 @@ class ContactActivity : AppCompatActivity() {
     }
 
     private fun getPhoneNumber(id: String): String? {
-        val people = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+        val cursor = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                 null, ContactsContract.Data.RAW_CONTACT_ID + "= " + id, null, null)
 
-        if (people.moveToFirst()) {
-            val number = people.getString(people.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
-            people.close()
+        if (cursor.moveToFirst()) {
+            val number = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
+            cursor.close()
             return number
+        }
+
+        return null
+    }
+
+    private fun getEmail(id: String): String? {
+        val cursor = contentResolver.query(ContactsContract.CommonDataKinds.Email.CONTENT_URI,
+                null, ContactsContract.Data.RAW_CONTACT_ID + "= " + id, null, null)
+
+        if (cursor.moveToFirst()) {
+            val email = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA))
+            cursor.close()
+            return email
         }
 
         return null
