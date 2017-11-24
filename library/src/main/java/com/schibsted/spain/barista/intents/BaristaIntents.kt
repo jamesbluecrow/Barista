@@ -46,21 +46,21 @@ object BaristaIntents {
     @JvmOverloads
     fun mockContactIntent(name: String = BARISTA_TEST_CONTACT_NAME,
                           phone: String = BARISTA_TEST_CONTACT_PHONE,
-                          address: String = BARISTA_TEST_CONTACT_EMAIL): Uri {
-        val uri = createContact(name, phone, address)
-        val result = createContactPickStub(uri)
+                          address: String = BARISTA_TEST_CONTACT_EMAIL): List<Uri> {
+        val uris = createContact(name, phone, address)
+        val result = createContactPickStub(uris[0])
         intending(captureContact()).respondWith(result)
-        return uri
+        return uris
     }
 
-    private fun createContactPickStub(uri: Uri): Instrumentation.ActivityResult {
+    fun createContactPickStub(uri: Uri): Instrumentation.ActivityResult {
         val resultData = Intent()
         resultData.data = uri
 
         return Instrumentation.ActivityResult(Activity.RESULT_OK, resultData)
     }
 
-    private fun createContact(name: String, number: String, address: String): Uri {
+    fun createContact(name: String, number: String, address: String): List<Uri> {
         val contactOperationsList = ArrayList<ContentProviderOperation>()
 
         contactOperationsList.add(ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
@@ -78,16 +78,22 @@ object BaristaIntents {
         val arrayOfContentProviderResults = getInstrumentation().targetContext.contentResolver.applyBatch(ContactsContract.AUTHORITY, contactOperationsList)
         val uri = arrayOfContentProviderResults[0].uri
 
+
+        val uris = arrayListOf(uri)
+
         // PHONES
-        addPhone(uri.lastPathSegment, number)
+        val phoneUris = addPhone(uri.lastPathSegment, number)
 
         // EMAILS
-        addEmail(uri.lastPathSegment, address)
+        val emailUris = addEmail(uri.lastPathSegment, address)
 
-        return uri
+        uris.addAll(phoneUris)
+        uris.addAll(emailUris)
+
+        return uris
     }
 
-    private fun addPhone(rawContactId: String, number: String) {
+    private fun addPhone(rawContactId: String, number: String): List<Uri> {
         val phoneTypes = arrayListOf<Int>()
 
         phoneTypes.add(ContactsContract.CommonDataKinds.Phone.TYPE_HOME)
@@ -120,10 +126,10 @@ object BaristaIntents {
                     .withValue(ContactsContract.CommonDataKinds.Phone.TYPE, it)
                     .build())
         }
-        getInstrumentation().targetContext.contentResolver.applyBatch(ContactsContract.AUTHORITY, phonesOperationsList)
+        return getInstrumentation().targetContext.contentResolver.applyBatch(ContactsContract.AUTHORITY, phonesOperationsList).map { it.uri }
     }
 
-    private fun addEmail(rawContactId: String, address: String) {
+    private fun addEmail(rawContactId: String, address: String): List<Uri> {
         val emailTypes = arrayListOf<Int>()
 
         emailTypes.add(ContactsContract.CommonDataKinds.Email.TYPE_HOME)
@@ -140,7 +146,14 @@ object BaristaIntents {
                     .withValue(ContactsContract.CommonDataKinds.Email.TYPE, it)
                     .build())
         }
-        getInstrumentation().targetContext.contentResolver.applyBatch(ContactsContract.AUTHORITY, emailsOperationsList)
+        return getInstrumentation().targetContext.contentResolver.applyBatch(ContactsContract.AUTHORITY, emailsOperationsList).map { it.uri }
+    }
+
+    @JvmStatic
+    fun clearContactData(uris: List<Uri>) {
+        uris.forEach {
+            getInstrumentation().targetContext.contentResolver.delete(it, null, null)
+        }
     }
 
     @JvmStatic
