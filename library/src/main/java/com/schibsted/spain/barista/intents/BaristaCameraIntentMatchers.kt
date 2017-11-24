@@ -18,7 +18,7 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.OutputStream
 
-internal object BaristaIntentMatchers {
+internal object BaristaCameraIntentMatchers {
 
     private val DEFAULT_SIZE = 100
 

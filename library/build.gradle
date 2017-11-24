@@ -21,6 +21,7 @@ android {
 dependencies {
     compile "com.android.support.test.espresso:espresso-core:$espressoVersion"
     compile "com.android.support.test.espresso:espresso-contrib:$espressoVersion"
+    compile "com.android.support.test:runner:$espressoRunnerVersion"
     compile "com.android.support.test.uiautomator:uiautomator-v18:$uiAutomatorVersion"
     compile "com.android.support.test.espresso:espresso-intents:$espressoVersion"
 
