@@ -1,5 +1,6 @@
 package com.schibsted.spain.barista.sample;
 
+import android.net.Uri;
 import android.support.test.espresso.intent.rule.IntentsTestRule;
 import android.support.test.rule.GrantPermissionRule;
 import android.support.test.runner.AndroidJUnit4;
@@ -12,6 +13,7 @@ import static com.schibsted.spain.barista.assertion.BaristaVisibilityAssertions.
 import static com.schibsted.spain.barista.intents.BaristaIntents.BARISTA_TEST_CONTACT_EMAIL;
 import static com.schibsted.spain.barista.intents.BaristaIntents.BARISTA_TEST_CONTACT_NAME;
 import static com.schibsted.spain.barista.intents.BaristaIntents.BARISTA_TEST_CONTACT_PHONE;
+import static com.schibsted.spain.barista.intents.BaristaIntents.clearContactData;
 import static com.schibsted.spain.barista.intents.BaristaIntents.mockContactIntent;
 import static com.schibsted.spain.barista.interaction.BaristaClickInteractions.clickOn;
 
@@ -26,13 +28,15 @@ public class ContactTest {
 
   @Test
   public void pickContactAndShowInfo() {
-    mockContactIntent();
+    Uri contactUri = mockContactIntent();
 
     clickOn(R.id.pick_contact);
 
     assertDisplayed(BARISTA_TEST_CONTACT_NAME);
     assertDisplayed(BARISTA_TEST_CONTACT_PHONE);
     assertDisplayed(BARISTA_TEST_CONTACT_EMAIL);
+
+    clearContactData(contactUri);
   }
 
 }

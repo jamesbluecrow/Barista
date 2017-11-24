@@ -46,9 +46,11 @@ object BaristaIntents {
     @JvmOverloads
     fun mockContactIntent(name: String = BARISTA_TEST_CONTACT_NAME,
                           phone: String = BARISTA_TEST_CONTACT_PHONE,
-                          address: String = BARISTA_TEST_CONTACT_EMAIL) {
-        val result = createContactPickStub(createContact(name, phone, address))
+                          address: String = BARISTA_TEST_CONTACT_EMAIL): Uri {
+        val uri = createContact(name, phone, address)
+        val result = createContactPickStub(uri)
         intending(captureContact()).respondWith(result)
+        return uri
     }
 
     private fun createContactPickStub(uri: Uri): Instrumentation.ActivityResult {
@@ -139,6 +141,11 @@ object BaristaIntents {
                     .build())
         }
         getInstrumentation().targetContext.contentResolver.applyBatch(ContactsContract.AUTHORITY, emailsOperationsList)
+    }
+
+    @JvmStatic
+    fun clearContactData(uri: Uri) {
+        getInstrumentation().targetContext.contentResolver.delete(uri, null, null)
     }
 
 }

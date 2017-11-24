@@ -1,7 +1,6 @@
 package com.schibsted.spain.barista.intents
 
 import android.content.Intent
-import android.net.Uri
 import android.support.test.espresso.core.internal.deps.guava.base.Preconditions
 import org.hamcrest.Description
 import org.hamcrest.Matcher
@@ -29,5 +28,3 @@ internal object BaristaContactIntentMatchers {
         }
     }
 }
-
-data class MockIntent(val matcher: Matcher<Intent>, val uri: Uri)
