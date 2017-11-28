@@ -1,5 +1,6 @@
 package com.schibsted.spain.barista.assertion
 
+import android.support.annotation.ColorRes
 import android.support.annotation.IdRes
 import android.support.test.espresso.AmbiguousViewMatcherException
 import android.support.test.espresso.Espresso.onView
@@ -11,6 +12,7 @@ import android.view.View
 import com.schibsted.spain.barista.internal.failurehandler.SpyFailureHandler
 import com.schibsted.spain.barista.internal.failurehandler.description
 import com.schibsted.spain.barista.internal.matcher.HelperMatchers
+import com.schibsted.spain.barista.internal.matcher.TextColorMatcher
 import com.schibsted.spain.barista.internal.util.resourceMatcher
 import org.hamcrest.CoreMatchers
 import org.hamcrest.CoreMatchers.containsString
@@ -85,5 +87,15 @@ object BaristaVisibilityAssertions {
     @JvmStatic
     fun assertNotContains(text: String) {
         onView(withText(containsString(text))).check(matches(not(isDisplayed())))
+    }
+
+    @JvmStatic
+    fun assertTextColor(@IdRes resId: Int, @ColorRes colorRes: Int) {
+        onView(withId(resId)).check(matches(TextColorMatcher(colorRes)))
+    }
+
+    @JvmStatic
+    fun assertNotTextColor(@IdRes resId: Int, @ColorRes colorRes: Int) {
+        onView(withId(resId)).check(matches(not(TextColorMatcher(colorRes))))
     }
 }
